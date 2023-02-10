@@ -20,7 +20,7 @@ class Signup(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
 
-
+secret = settings.SECRET_KEY
 class Login(APIView):
     def post(self,request):
         email = request.data.get('email')
@@ -40,7 +40,8 @@ class Login(APIView):
             'iat': datetime.datetime.utcnow()
 
         }
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+        token = jwt.encode(payload,'secret', algorithm='HS256').decode('utf-8')
+
 
         response = Response()
         response.set_cookie(key='jwt',value=token,httponly=True)
@@ -52,16 +53,17 @@ class Login(APIView):
                         }
 
 
-        return Response({ 'message': 'Logged in successfully' },status=status.HTTP_200_OK)
+        return response
 
 class UserView(APIView):
     def get(self,request):
         token = request.COOKIES.get('jwt')
-        
         if token is None:
             raise AuthenticationFailed('User is not logged in')
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            payload = jwt.decode(token,'secret', algorithm=['HS256'])
+        except jwt.DecodeError:
+            return Response({'error':'Decode error'},status=status.HTTP_401_UNAUTHORIZED)
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Invalid token')
         user = User.objects.filter(id=payload['user_id']).first()
