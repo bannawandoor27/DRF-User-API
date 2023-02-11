@@ -8,10 +8,11 @@ class User(AbstractUser):
     email = models.EmailField(unique=True,max_length=255)
     password = models.CharField(max_length=100)
     date_of_birth = models.DateField(max_length=8)
-    # profile_picture = models.ImageField(upload_to='profile_pictures')
+    profile_picture = models.ImageField(upload_to='profile_pictures',blank=True,null=True)
+
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = [ 'username','mobile_number','password','date_of_birth','name']
+    REQUIRED_FIELDS = [ 'username','mobile_number','password','date_of_birth','name',]
 
 
     
